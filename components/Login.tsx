@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Lock, User, X, LogIn } from 'lucide-react';
+import { Lock, User, X, LogIn, ShieldCheck } from 'lucide-react';
 
 interface LoginProps {
   onLogin: () => void;
@@ -14,7 +14,6 @@ const Login: React.FC<LoginProps> = ({ onLogin, onCancel }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Default credentials as requested
     if (username === 'admin' && password === 'admin123') {
       onLogin();
     } else {
@@ -23,55 +22,56 @@ const Login: React.FC<LoginProps> = ({ onLogin, onCancel }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
-      <div className="bg-white rounded-[32px] w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in duration-300">
-        <div className="bg-blue-600 p-8 text-white relative">
-          <button onClick={onCancel} className="absolute top-6 right-6 p-2 hover:bg-white/20 rounded-full transition-colors">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-6">
+      <div className="bg-white rounded-[48px] w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in duration-500 border border-white/20">
+        <div className="bg-gradient-to-br from-slate-900 to-blue-900 p-10 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full -translate-y-32 translate-x-32 blur-3xl"></div>
+          <button onClick={onCancel} className="absolute top-8 right-8 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors z-10">
             <X className="w-5 h-5" />
           </button>
-          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
-            <Lock className="w-8 h-8" />
+          <div className="w-20 h-20 bg-white/10 backdrop-blur-xl rounded-[28px] flex items-center justify-center mb-6 border border-white/20 shadow-2xl relative z-10">
+            <ShieldCheck className="w-10 h-10 text-blue-400" />
           </div>
-          <h2 className="text-2xl font-black">অ্যাডমিন লগইন</h2>
-          <p className="text-blue-100 text-sm mt-1">তথ্য পরিবর্তনের জন্য প্রবেশ করুন</p>
+          <h2 className="text-3xl font-black relative z-10 leading-tight">অ্যাডমিন প্যানেল</h2>
+          <p className="text-blue-200 text-sm mt-2 font-medium opacity-80 relative z-10 uppercase tracking-widest">সিকিউর লগইন</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="p-10 space-y-6">
           {error && (
-            <div className="p-4 bg-red-50 text-red-600 rounded-xl text-sm font-bold border border-red-100 animate-in fade-in slide-in-from-top-2">
+            <div className="p-4 bg-rose-50 text-rose-600 rounded-2xl text-xs font-black border border-rose-100 animate-in shake-in">
               {error}
             </div>
           )}
 
           <div className="space-y-4">
-            <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+            <div className="group relative">
+              <User className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5 group-focus-within:text-blue-600 transition-colors" />
               <input
                 type="text"
                 placeholder="ইউজারনেম"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 transition-all font-bold"
+                className="w-full pl-14 pr-6 py-5 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-600 transition-all font-bold text-slate-700"
               />
             </div>
 
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+            <div className="group relative">
+              <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 w-5 h-5 group-focus-within:text-blue-600 transition-colors" />
               <input
                 type="password"
                 placeholder="পাসওয়ার্ড"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 transition-all font-bold"
+                className="w-full pl-14 pr-6 py-5 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-600 transition-all font-bold text-slate-700"
               />
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="w-full py-5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-[24px] font-black shadow-xl shadow-blue-500/20 hover:shadow-blue-500/40 active:scale-95 transition-all flex items-center justify-center gap-3 text-lg"
           >
-            <LogIn className="w-5 h-5" /> প্রবেশ করুন
+            <LogIn className="w-6 h-6" /> প্রবেশ করুন
           </button>
         </form>
       </div>
