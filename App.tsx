@@ -36,16 +36,25 @@ const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
 
-  // Check for admin flag in URL on load
+  // Check for /admin path on load and on state change
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('admin') === 'true') {
-      if (isAuthenticated) {
-        setAppMode('admin_dashboard');
+    const handlePathCheck = () => {
+      if (window.location.pathname === '/admin') {
+        if (isAuthenticated) {
+          setAppMode('admin_dashboard');
+          setShowLogin(false);
+        } else {
+          setShowLogin(true);
+        }
       } else {
-        setShowLogin(true);
+        setAppMode('public');
+        setShowLogin(false);
       }
-    }
+    };
+
+    handlePathCheck();
+    window.addEventListener('popstate', handlePathCheck);
+    return () => window.removeEventListener('popstate', handlePathCheck);
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -66,12 +75,14 @@ const App: React.FC = () => {
         setInfoData={setInfoData}
         onExit={() => {
           setAppMode('public');
-          window.history.replaceState({}, '', window.location.pathname);
+          window.history.pushState({}, '', '/');
+          window.dispatchEvent(new PopStateEvent('popstate'));
         }}
         onLogout={() => { 
           setIsAuthenticated(false); 
           setAppMode('public');
-          window.history.replaceState({}, '', window.location.pathname);
+          window.history.pushState({}, '', '/');
+          window.dispatchEvent(new PopStateEvent('popstate'));
         }}
       />
     );
@@ -84,11 +95,16 @@ const App: React.FC = () => {
           onLogin={() => { 
             setIsAuthenticated(true); 
             setShowLogin(false); 
-            setAppMode('admin_dashboard'); 
+            setAppMode('admin_dashboard');
+            if (window.location.pathname !== '/admin') {
+              window.history.pushState({}, '', '/admin');
+            }
           }} 
           onCancel={() => {
             setShowLogin(false);
-            window.history.replaceState({}, '', window.location.pathname);
+            if (window.location.pathname === '/admin') {
+              window.history.pushState({}, '', '/');
+            }
           }} 
         />
       )}
@@ -159,12 +175,8 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Hidden Admin Entry via Footer interaction */}
       <footer className="py-10 text-center border-t border-slate-100 mt-10">
-        <p 
-          className="text-slate-800 font-black cursor-default select-none"
-          onDoubleClick={() => setShowLogin(true)}
-        >
+        <p className="text-slate-800 font-black cursor-default select-none">
           মীর রাব্বি হোসেন
         </p>
         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">আমিনপুর থানা ডিজিটাল প্ল্যাটফর্ম</p>
