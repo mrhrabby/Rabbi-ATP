@@ -15,4 +15,11 @@ export interface Content {
   createdAt: number;
 }
 
+export interface GitHubConfig {
+  token: string;
+  owner: string;
+  repo: string;
+  path: string;
+}
+
 export type View = 'home' | 'admin' | 'category-detail';
