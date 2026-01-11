@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Building2, ArrowLeft, Phone, MapPin,
-  Home, GraduationCap, Stethoscope, UserRound, Truck, Bus, Store, Info, PhoneCall
+  Home, GraduationCap, Stethoscope, UserRound, Truck, Bus, Store, Info, PhoneCall,
+  Image as ImageIcon
 } from 'lucide-react';
 import { CATEGORIES as INITIAL_CATEGORIES, INFO_DATA as INITIAL_INFO } from './constants';
 import { Category, InfoItem, ViewType, AppMode } from './types';
@@ -36,7 +37,6 @@ const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
 
-  // Check for /admin path on load and on state change
   useEffect(() => {
     const handlePathCheck = () => {
       if (window.location.pathname === '/admin') {
@@ -65,7 +65,6 @@ const App: React.FC = () => {
   const currentCategory = categories.find(c => c.id === selectedCategoryId);
   const filteredInfo = infoData.filter(item => item.categoryId === selectedCategoryId);
 
-  // Render Admin Dashboard separately
   if (appMode === 'admin_dashboard' && isAuthenticated) {
     return (
       <AdminDashboard 
@@ -109,7 +108,6 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Pure Public Header - No Admin Buttons */}
       <header className="bg-white border-b border-slate-100 h-16 flex items-center px-6 sticky top-0 z-50">
         <div className="flex-1 flex items-center gap-3">
           <div className="bg-blue-600 p-2 rounded-xl">
@@ -132,10 +130,14 @@ const App: React.FC = () => {
                 <button 
                   key={cat.id}
                   onClick={() => { setSelectedCategoryId(cat.id); setCurrentView('category-detail'); }}
-                  className="bg-white p-6 rounded-[24px] border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all"
+                  className="bg-white p-5 lg:p-6 rounded-[24px] border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all"
                 >
-                  <div className={`w-14 h-14 ${cat.color} rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg`}>
-                    <Icon name={cat.icon} className="w-7 h-7" />
+                  <div className={`w-14 h-14 ${cat.color} rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg overflow-hidden`}>
+                    {cat.image ? (
+                      <img src={cat.image} className="w-full h-full object-cover" />
+                    ) : (
+                      <Icon name={cat.icon} className="w-7 h-7" />
+                    )}
                   </div>
                   <h3 className="font-bold text-slate-800 text-sm">{cat.name}</h3>
                 </button>
@@ -153,17 +155,26 @@ const App: React.FC = () => {
 
             <div className="space-y-4">
               {filteredInfo.length > 0 ? filteredInfo.map(item => (
-                <div key={item.id} className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm">
-                  <h4 className="text-lg font-black text-slate-800 mb-3">{item.title}</h4>
-                  <div className="space-y-2 text-sm text-slate-600">
-                    <div className="flex items-center gap-2 font-bold"><MapPin className="w-4 h-4 text-blue-500" /> {item.address}</div>
-                    {item.phone && <div className="flex items-center gap-2 font-bold"><Phone className="w-4 h-4 text-emerald-500" /> {item.phone}</div>}
-                  </div>
-                  {item.phone && (
-                    <a href={`tel:${item.phone}`} className="mt-6 w-full py-4 bg-blue-600 text-white rounded-2xl flex items-center justify-center gap-2 font-black active:scale-95 transition-all">
-                      <Phone className="w-4 h-4" /> কল করুন
-                    </a>
+                <div key={item.id} className="bg-white overflow-hidden rounded-[24px] border border-slate-100 shadow-sm flex flex-col sm:flex-row">
+                  {item.image && (
+                    <div className="w-full sm:w-48 h-48 flex-shrink-0">
+                      <img src={item.image} className="w-full h-full object-cover" />
+                    </div>
                   )}
+                  <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="text-lg font-black text-slate-800 mb-3">{item.title}</h4>
+                      <div className="space-y-2 text-sm text-slate-600">
+                        <div className="flex items-center gap-2 font-bold"><MapPin className="w-4 h-4 text-blue-500" /> {item.address}</div>
+                        {item.phone && <div className="flex items-center gap-2 font-bold"><Phone className="w-4 h-4 text-emerald-500" /> {item.phone}</div>}
+                      </div>
+                    </div>
+                    {item.phone && (
+                      <a href={`tel:${item.phone}`} className="mt-6 w-full py-4 bg-blue-600 text-white rounded-2xl flex items-center justify-center gap-2 font-black active:scale-95 transition-all">
+                        <Phone className="w-4 h-4" /> কল করুন
+                      </a>
+                    )}
+                  </div>
                 </div>
               )) : (
                 <div className="text-center py-20">

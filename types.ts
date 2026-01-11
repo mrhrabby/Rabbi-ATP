@@ -5,6 +5,7 @@ export interface Category {
   description: string;
   icon: string;
   color: string;
+  image?: string; // Base64 or URL for category image
 }
 
 export interface InfoItem {
@@ -20,6 +21,7 @@ export interface InfoItem {
   timing?: string;
   route?: string;
   details?: string;
+  image?: string; // Base64 or URL for institution image
 }
 
 export type AppMode = 'public' | 'admin_dashboard';
