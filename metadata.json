@@ -1,6 +1,6 @@
 {
-  "name": "ContentHub Pro",
-  "description": "A feature-rich content management and delivery application with a mobile-first dashboard and an AI-powered admin panel.",
+  "name": "আমিনপুর থানা তথ্যসেবা",
+  "description": "আমিনপুর থানা, পাবনা এলাকার একটি পূর্ণাঙ্গ তথ্যভিত্তিক প্ল্যাটফর্ম।",
   "requestFramePermissions": [
     "camera"
   ]

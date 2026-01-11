@@ -2,7 +2,8 @@
 import { GoogleGenAI } from "@google/genai";
 
 export const generateAIDescription = async (title: string, category: string): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+  // Correctly initialize GoogleGenAI with named apiKey parameter using the environment variable directly
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   try {
     const response = await ai.models.generateContent({
@@ -10,6 +11,7 @@ export const generateAIDescription = async (title: string, category: string): Pr
       contents: `Generate a short, engaging description in Bengali for a content piece titled "${title}" in the category of "${category}". The tone should be professional yet appealing. Limit to 150 words.`,
     });
 
+    // Directly access the .text property from GenerateContentResponse
     return response.text || "দুঃখিত, বর্ণনা তৈরি করা সম্ভব হয়নি।";
   } catch (error) {
     console.error("Gemini Error:", error);
