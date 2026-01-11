@@ -40,17 +40,15 @@ const App: React.FC = () => {
 
   // Sync state with History API
   useEffect(() => {
-    // Initial state setup to handle "Back from Homepage"
+    // Initial state setup
     window.history.replaceState({ view: 'dashboard' }, '');
 
     const handlePopState = (event: PopStateEvent) => {
-      // If we are on login screen, close it
       if (showLogin) {
         setShowLogin(false);
         return;
       }
 
-      // Admin mode transitions
       if (window.location.pathname === '/admin') {
         if (isAuthenticated) {
           setAppMode('admin_dashboard');
@@ -60,14 +58,12 @@ const App: React.FC = () => {
         return;
       }
 
-      // Public view navigation
       if (appMode === 'public') {
         const state = event.state;
         
         if (!state || state.view === 'dashboard') {
-          // If the user tries to go back from dashboard
           if (currentView === 'dashboard') {
-            // Re-push to prevent actual back, then show dialog
+            // Intercept exit from home
             window.history.pushState({ view: 'dashboard' }, '');
             setShowExitDialog(true);
           } else {
@@ -83,7 +79,6 @@ const App: React.FC = () => {
 
     window.addEventListener('popstate', handlePopState);
     
-    // Initial path check
     if (window.location.pathname === '/admin') {
       if (isAuthenticated) {
         setAppMode('admin_dashboard');
@@ -137,25 +132,23 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-['Hind_Siliguri'] overflow-x-hidden">
       {/* Custom Exit Dialog */}
       {showExitDialog && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white rounded-[32px] w-full max-sm:w-full max-w-sm overflow-hidden shadow-2xl animate-in slide-in-from-bottom-10 duration-300">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white rounded-[32px] w-full max-w-sm overflow-hidden shadow-2xl animate-in slide-in-from-bottom-10 sm:zoom-in duration-300">
             <div className="p-8 text-center">
               <div className="w-20 h-20 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <AlertTriangle className="w-10 h-10" />
               </div>
-              <h3 className="text-2xl font-black text-slate-800 mb-2">প্রস্থান করতে চান?</h3>
-              <p className="text-slate-500 font-medium">আপনি কি নিশ্চিত যে আপনি অ্যাপ্লিকেশনটি বন্ধ করতে চান?</p>
+              <h3 className="text-2xl font-black text-slate-800 mb-2">আপনি কি বের হতে চান?</h3>
+              <p className="text-slate-500 font-medium leading-relaxed">অ্যাপ্লিকেশনটি বন্ধ করার আগে আপনার কাজগুলো নিশ্চিত করুন।</p>
             </div>
-            <div className="flex p-4 gap-3 bg-slate-50 border-t border-slate-100">
+            <div className="flex p-5 gap-3 bg-slate-50 border-t border-slate-100">
               <button 
                 onClick={() => setShowExitDialog(false)}
-                className="flex-1 py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-black active:scale-95 transition-all"
+                className="flex-1 py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-black active:scale-95 transition-all shadow-sm"
               >
                 না
               </button>
               <button 
-                // Fix: An expression of type 'void' cannot be tested for truthiness.
-                // Replaced logical OR with a block statement since window.close() returns void.
                 onClick={() => {
                   window.close();
                   window.location.href = 'about:blank';
