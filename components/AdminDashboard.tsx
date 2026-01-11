@@ -28,6 +28,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageUploadRef = useRef<HTMLInputElement>(null);
 
+  // Trap back button for confirmation
+  useEffect(() => {
+    // Initial push to history to ensure we can catch the first back button press
+    window.history.pushState({ section: 'admin' }, '', window.location.pathname);
+
+    const handlePopState = (event: PopStateEvent) => {
+      // Show confirmation dialog
+      const confirmExit = window.confirm('আপনি কি এডমিন প্যানেল থেকে বের হতে চান?');
+      
+      if (confirmExit) {
+        onExit();
+      } else {
+        // If they stay, push the state back to keep the "trap" active
+        window.history.pushState({ section: 'admin' }, '', window.location.pathname);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [onExit]);
+
   // Close sidebar on section change (mobile)
   useEffect(() => {
     setIsSidebarOpen(false);
@@ -125,10 +146,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </nav>
 
         <div className="p-6 border-t border-slate-800 space-y-3">
-          <button onClick={onExit} className="w-full flex items-center gap-3 px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-all">
+          <button onClick={() => { if(window.confirm('পাবলিক অ্যাপে ফিরে যেতে চান?')) onExit(); }} className="w-full flex items-center gap-3 px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-all">
             <ExternalLink className="w-4 h-4" /> পাবলিক অ্যাপ
           </button>
-          <button onClick={onLogout} className="w-full flex items-center gap-3 px-5 py-3 rounded-xl text-red-400 hover:bg-red-400/10 font-bold transition-all">
+          <button onClick={() => { if(window.confirm('লগআউট করতে চান?')) onLogout(); }} className="w-full flex items-center gap-3 px-5 py-3 rounded-xl text-red-400 hover:bg-red-400/10 font-bold transition-all">
             <LogOut className="w-4 h-4" /> লগআউট
           </button>
         </div>

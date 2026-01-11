@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Building2, ArrowLeft, Phone, MapPin,
   Home, GraduationCap, Stethoscope, UserRound, Truck, Bus, Store, Info, PhoneCall,
@@ -37,30 +37,59 @@ const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
 
+  // Handle path and view states based on browser history
   useEffect(() => {
-    const handlePathCheck = () => {
+    const handlePopState = (event: PopStateEvent) => {
+      // If we are in admin mode, AdminDashboard component will handle its own popstate logic
       if (window.location.pathname === '/admin') {
-        if (isAuthenticated) {
-          setAppMode('admin_dashboard');
-          setShowLogin(false);
-        } else {
+        if (!isAuthenticated) {
           setShowLogin(true);
         }
-      } else {
-        setAppMode('public');
-        setShowLogin(false);
+        return;
+      }
+
+      // Public view navigation
+      if (appMode === 'public') {
+        const state = event.state;
+        if (state?.view === 'category-detail') {
+          setCurrentView('category-detail');
+          setSelectedCategoryId(state.categoryId);
+        } else {
+          setCurrentView('dashboard');
+          setSelectedCategoryId(null);
+        }
       }
     };
 
-    handlePathCheck();
-    window.addEventListener('popstate', handlePathCheck);
-    return () => window.removeEventListener('popstate', handlePathCheck);
-  }, [isAuthenticated]);
+    window.addEventListener('popstate', handlePopState);
+    
+    // Initial path check
+    if (window.location.pathname === '/admin') {
+      if (isAuthenticated) {
+        setAppMode('admin_dashboard');
+      } else {
+        setShowLogin(true);
+      }
+    }
+
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isAuthenticated, appMode]);
 
   useEffect(() => {
     localStorage.setItem('aminpur_categories', JSON.stringify(categories));
     localStorage.setItem('aminpur_info', JSON.stringify(infoData));
   }, [categories, infoData]);
+
+  const navigateToCategory = useCallback((catId: string) => {
+    setSelectedCategoryId(catId);
+    setCurrentView('category-detail');
+    // Push state to history so back button works
+    window.history.pushState({ view: 'category-detail', categoryId: catId }, '', window.location.pathname);
+  }, []);
+
+  const navigateBack = useCallback(() => {
+    window.history.back();
+  }, []);
 
   const currentCategory = categories.find(c => c.id === selectedCategoryId);
   const filteredInfo = infoData.filter(item => item.categoryId === selectedCategoryId);
@@ -74,14 +103,12 @@ const App: React.FC = () => {
         setInfoData={setInfoData}
         onExit={() => {
           setAppMode('public');
-          window.history.pushState({}, '', '/');
-          window.dispatchEvent(new PopStateEvent('popstate'));
+          window.history.pushState({ view: 'dashboard' }, '', '/');
         }}
         onLogout={() => { 
           setIsAuthenticated(false); 
           setAppMode('public');
-          window.history.pushState({}, '', '/');
-          window.dispatchEvent(new PopStateEvent('popstate'));
+          window.history.pushState({ view: 'dashboard' }, '', '/');
         }}
       />
     );
@@ -95,14 +122,12 @@ const App: React.FC = () => {
             setIsAuthenticated(true); 
             setShowLogin(false); 
             setAppMode('admin_dashboard');
-            if (window.location.pathname !== '/admin') {
-              window.history.pushState({}, '', '/admin');
-            }
+            window.history.pushState({ mode: 'admin' }, '', '/admin');
           }} 
           onCancel={() => {
             setShowLogin(false);
             if (window.location.pathname === '/admin') {
-              window.history.pushState({}, '', '/');
+              window.history.pushState({ view: 'dashboard' }, '', '/');
             }
           }} 
         />
@@ -129,7 +154,7 @@ const App: React.FC = () => {
               {categories.map(cat => (
                 <button 
                   key={cat.id}
-                  onClick={() => { setSelectedCategoryId(cat.id); setCurrentView('category-detail'); }}
+                  onClick={() => navigateToCategory(cat.id)}
                   className="bg-white p-5 lg:p-6 rounded-[24px] border border-slate-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all"
                 >
                   <div className={`w-14 h-14 ${cat.color} rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg overflow-hidden`}>
@@ -147,7 +172,7 @@ const App: React.FC = () => {
         ) : (
           <div className="animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="flex items-center gap-4 mb-8">
-              <button onClick={() => setCurrentView('dashboard')} className="p-3 bg-white rounded-2xl shadow-sm border border-slate-200">
+              <button onClick={navigateBack} className="p-3 bg-white rounded-2xl shadow-sm border border-slate-200">
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <h2 className="text-2xl font-black text-slate-800">{currentCategory?.name}</h2>
