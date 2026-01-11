@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Building2, ArrowLeft, Phone, MapPin,
   Home, GraduationCap, Stethoscope, UserRound, Truck, Bus, Store, Info, PhoneCall,
-  Image as ImageIcon
+  Image as ImageIcon, AlertTriangle, LogOut
 } from 'lucide-react';
 import { CATEGORIES as INITIAL_CATEGORIES, INFO_DATA as INITIAL_INFO } from './constants';
 import { Category, InfoItem, ViewType, AppMode } from './types';
@@ -23,6 +23,7 @@ const App: React.FC = () => {
   const [appMode, setAppMode] = useState<AppMode>('public');
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [showExitDialog, setShowExitDialog] = useState(false);
   
   const [categories, setCategories] = useState<Category[]>(() => {
     const saved = localStorage.getItem('aminpur_categories');
@@ -37,12 +38,23 @@ const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
 
-  // Handle path and view states based on browser history
+  // Sync state with History API
   useEffect(() => {
+    // Initial state setup to handle "Back from Homepage"
+    window.history.replaceState({ view: 'dashboard' }, '');
+
     const handlePopState = (event: PopStateEvent) => {
-      // If we are in admin mode, AdminDashboard component will handle its own popstate logic
+      // If we are on login screen, close it
+      if (showLogin) {
+        setShowLogin(false);
+        return;
+      }
+
+      // Admin mode transitions
       if (window.location.pathname === '/admin') {
-        if (!isAuthenticated) {
+        if (isAuthenticated) {
+          setAppMode('admin_dashboard');
+        } else {
           setShowLogin(true);
         }
         return;
@@ -51,12 +63,20 @@ const App: React.FC = () => {
       // Public view navigation
       if (appMode === 'public') {
         const state = event.state;
-        if (state?.view === 'category-detail') {
+        
+        if (!state || state.view === 'dashboard') {
+          // If the user tries to go back from dashboard
+          if (currentView === 'dashboard') {
+            // Re-push to prevent actual back, then show dialog
+            window.history.pushState({ view: 'dashboard' }, '');
+            setShowExitDialog(true);
+          } else {
+            setCurrentView('dashboard');
+            setSelectedCategoryId(null);
+          }
+        } else if (state.view === 'category-detail') {
           setCurrentView('category-detail');
           setSelectedCategoryId(state.categoryId);
-        } else {
-          setCurrentView('dashboard');
-          setSelectedCategoryId(null);
         }
       }
     };
@@ -73,7 +93,7 @@ const App: React.FC = () => {
     }
 
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [isAuthenticated, appMode]);
+  }, [isAuthenticated, appMode, currentView, showLogin]);
 
   useEffect(() => {
     localStorage.setItem('aminpur_categories', JSON.stringify(categories));
@@ -83,8 +103,7 @@ const App: React.FC = () => {
   const navigateToCategory = useCallback((catId: string) => {
     setSelectedCategoryId(catId);
     setCurrentView('category-detail');
-    // Push state to history so back button works
-    window.history.pushState({ view: 'category-detail', categoryId: catId }, '', window.location.pathname);
+    window.history.pushState({ view: 'category-detail', categoryId: catId }, '');
   }, []);
 
   const navigateBack = useCallback(() => {
@@ -115,7 +134,41 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-['Hind_Siliguri']">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-['Hind_Siliguri'] overflow-x-hidden">
+      {/* Custom Exit Dialog */}
+      {showExitDialog && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white rounded-[32px] w-full max-sm:w-full max-w-sm overflow-hidden shadow-2xl animate-in slide-in-from-bottom-10 duration-300">
+            <div className="p-8 text-center">
+              <div className="w-20 h-20 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <AlertTriangle className="w-10 h-10" />
+              </div>
+              <h3 className="text-2xl font-black text-slate-800 mb-2">প্রস্থান করতে চান?</h3>
+              <p className="text-slate-500 font-medium">আপনি কি নিশ্চিত যে আপনি অ্যাপ্লিকেশনটি বন্ধ করতে চান?</p>
+            </div>
+            <div className="flex p-4 gap-3 bg-slate-50 border-t border-slate-100">
+              <button 
+                onClick={() => setShowExitDialog(false)}
+                className="flex-1 py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-black active:scale-95 transition-all"
+              >
+                না
+              </button>
+              <button 
+                // Fix: An expression of type 'void' cannot be tested for truthiness.
+                // Replaced logical OR with a block statement since window.close() returns void.
+                onClick={() => {
+                  window.close();
+                  window.location.href = 'about:blank';
+                }}
+                className="flex-1 py-4 bg-red-600 text-white rounded-2xl font-black shadow-lg shadow-red-200 active:scale-95 transition-all"
+              >
+                হ্যাঁ, বের হবো
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showLogin && (
         <Login 
           onLogin={() => { 

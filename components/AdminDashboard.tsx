@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   LayoutDashboard, List, LayoutGrid, Database, Download, Upload, 
   Plus, Edit3, Trash2, X, Save, LogOut, ExternalLink, RefreshCcw, Search, BarChart3, Settings2,
-  Menu, Image as ImageIcon, Camera
+  Menu, Image as ImageIcon, Camera, AlertTriangle
 } from 'lucide-react';
 import { Category, InfoItem, AdminSection } from '../types';
 
@@ -25,29 +25,25 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formData, setFormData] = useState<any>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageUploadRef = useRef<HTMLInputElement>(null);
 
   // Trap back button for confirmation
   useEffect(() => {
-    // Initial push to history to ensure we can catch the first back button press
-    window.history.pushState({ section: 'admin' }, '', window.location.pathname);
+    // Current admin state
+    window.history.pushState({ section: 'admin' }, '');
 
     const handlePopState = (event: PopStateEvent) => {
-      // Show confirmation dialog
-      const confirmExit = window.confirm('আপনি কি এডমিন প্যানেল থেকে বের হতে চান?');
-      
-      if (confirmExit) {
-        onExit();
-      } else {
-        // If they stay, push the state back to keep the "trap" active
-        window.history.pushState({ section: 'admin' }, '', window.location.pathname);
-      }
+      // Show confirmation dialog instead of exiting
+      setShowExitConfirm(true);
+      // Immediately push back to history to prevent exiting if user cancels
+      window.history.pushState({ section: 'admin' }, '');
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [onExit]);
+  }, []);
 
   // Close sidebar on section change (mobile)
   useEffect(() => {
@@ -63,7 +59,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 1024 * 500) { // 500KB limit for localStorage safety
+      if (file.size > 1024 * 500) { 
         alert('ছবিটি অনেক বড় (৫০০কিবির বেশি)। ছোট সাইজের ছবি ব্যবহার করুন।');
         return;
       }
@@ -111,6 +107,38 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   return (
     <div className="flex h-screen bg-[#F1F5F9] font-['Hind_Siliguri'] overflow-hidden relative">
+      {/* Admin Exit Confirmation Overlay */}
+      {showExitConfirm && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
+          <div className="bg-white rounded-[40px] w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in duration-300">
+            <div className="p-10 text-center">
+              <div className="w-24 h-24 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <LogOut className="w-10 h-10" />
+              </div>
+              <h3 className="text-2xl font-black text-slate-800 mb-2">বের হতে চান?</h3>
+              <p className="text-slate-500 font-medium">অ্যাডমিন প্যানেল থেকে বের হয়ে পাবলিক অ্যাপে ফিরে যাবেন?</p>
+            </div>
+            <div className="flex p-6 gap-3 bg-slate-50">
+              <button 
+                onClick={() => setShowExitConfirm(false)}
+                className="flex-1 py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-black active:scale-95 transition-all"
+              >
+                না
+              </button>
+              <button 
+                onClick={() => {
+                  setShowExitConfirm(false);
+                  onExit();
+                }}
+                className="flex-1 py-4 bg-red-600 text-white rounded-2xl font-black shadow-lg shadow-red-200 active:scale-95 transition-all"
+              >
+                হ্যাঁ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar - Mobile Overlay */}
       {isSidebarOpen && (
         <div 
@@ -146,7 +174,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </nav>
 
         <div className="p-6 border-t border-slate-800 space-y-3">
-          <button onClick={() => { if(window.confirm('পাবলিক অ্যাপে ফিরে যেতে চান?')) onExit(); }} className="w-full flex items-center gap-3 px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-all">
+          <button onClick={() => setShowExitConfirm(true)} className="w-full flex items-center gap-3 px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-all">
             <ExternalLink className="w-4 h-4" /> পাবলিক অ্যাপ
           </button>
           <button onClick={() => { if(window.confirm('লগআউট করতে চান?')) onLogout(); }} className="w-full flex items-center gap-3 px-5 py-3 rounded-xl text-red-400 hover:bg-red-400/10 font-bold transition-all">
