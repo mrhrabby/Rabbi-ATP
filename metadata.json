@@ -1,0 +1,7 @@
+{
+  "name": "ContentHub Pro",
+  "description": "A feature-rich content management and delivery application with a mobile-first dashboard and an AI-powered admin panel.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
